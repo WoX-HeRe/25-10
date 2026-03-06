@@ -3,27 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WOX SYSTEM | NEURAL-CORE v8.0</title>
+<title>WOX SYSTEM | HEX-CORE v7.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;700&family=Syncopate:wght@700&family=Michroma&display=swap');
 
 :root {
     --primary: #00f3ff;
     --secondary: #bc13fe;
-    --bg: #020202;
-    --card-bg: rgba(10, 10, 10, 0.8);
+    --bg: #050505;
+    --card-bg: rgba(20, 20, 20, 0.7);
     --font-cyber: 'Fira Code', monospace;
-    --accent-glow: 0 0 20px rgba(0, 243, 255, 0.6);
+    --font-prime: 'Michroma', sans-serif;
+    --accent-glow: 0 0 15px rgba(0, 243, 255, 0.5);
 }
 
 [data-mode="prime"] {
-    --primary: #ff003c;
-    --secondary: #ff8000;
-    --bg: #050000;
-    --accent-glow: 0 0 25px rgba(255, 0, 60, 0.7);
+    --primary: #ffcc00;
+    --secondary: #ff3c00;
+    --bg: #0a0a00;
+    --card-bg: rgba(30, 30, 0, 0.7);
+    --accent-glow: 0 0 20px rgba(255, 204, 0, 0.6);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; box-shadow: var(--accent-glow); }
 
 body {
     background: var(--bg);
@@ -31,259 +38,269 @@ body {
     font-family: var(--font-cyber);
     min-height: 100vh;
     overflow-x: hidden;
-    perspective: 1000px;
+    transition: all 0.5s ease;
+    background-image: radial-gradient(circle at 50% 50%, #111 0%, #050505 100%);
 }
 
-/* Matrix Background Canvas */
-#matrix-canvas {
+/* Scanline Effect */
+body::before {
+    content: " ";
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; opacity: 0.15;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 3px 100%;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0.3;
 }
 
-/* Scanline and Noise */
-body::after {
-    content: "";
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-    background-size: 100% 3px, 2px 100%;
-    z-index: 1000; pointer-events: none;
+/* Hex Switch */
+.hex-switch-container {
+    position: fixed; right: 30px; top: 50%;
+    transform: translateY(-50%); z-index: 2000;
 }
 
-/* Floating Hex Switch */
-.hex-btn {
-    position: fixed; right: 40px; top: 40px;
-    width: 60px; height: 70px;
-    background: transparent;
+.hex-core {
+    width: 65px; height: 75px;
+    background: rgba(0,0,0,0.8);
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     border: 2px solid var(--primary);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative; cursor: pointer;
     box-shadow: var(--accent-glow);
+    display: flex; justify-content: center; align-items: center;
+    transition: 0.4s;
 }
-.hex-btn:hover { transform: rotate(180deg) scale(1.2); background: var(--primary); }
 
-header { text-align: center; padding: 100px 20px 50px; }
-.glitch-title {
-    font-family: 'Syncopate', sans-serif;
-    font-size: clamp(2.5rem, 12vw, 6rem);
-    text-transform: uppercase;
-    position: relative;
-    display: inline-block;
+.hex-core:hover { transform: scale(1.1) rotate(10deg); filter: brightness(1.5); }
+
+/* Header */
+header { text-align: center; padding: 80px 20px 40px; position: relative; }
+.system-id { color: var(--secondary); font-size: 0.8rem; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 15px; }
+.title { 
+    font-size: clamp(2.5rem, 10vw, 5rem); 
+    font-family: 'Syncopate', sans-serif; 
     color: #fff;
-    text-shadow: 0.05em 0 0 var(--secondary), -0.05em -0.025em 0 var(--primary);
-    animation: glitch 1s infinite;
+    text-shadow: 0 0 10px var(--primary), 3px 3px var(--secondary);
+    letter-spacing: -3px;
+    animation: glitch-text 3s infinite;
 }
 
-@keyframes glitch {
-    0% { text-shadow: 0.05em 0 0 var(--secondary), -0.05em -0.025em 0 var(--primary); }
-    15% { text-shadow: -0.05em -0.025em 0 var(--secondary), 0.025em 0.025em 0 var(--primary); }
-    100% { text-shadow: -0.025em 0 0 var(--secondary), -0.025em -0.025em 0 var(--primary); }
+@keyframes glitch-text {
+    0% { transform: translate(0); }
+    2% { transform: translate(-2px, 2px); text-shadow: 2px 0 var(--secondary); }
+    4% { transform: translate(2px, -2px); text-shadow: -2px 0 var(--primary); }
+    6% { transform: translate(0); }
 }
 
-.grid { max-width: 1100px; margin: 0 auto; padding: 20px 20px 150px; }
-
+/* Grid System */
+.grid { max-width: 1000px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
 .card {
     background: var(--card-bg);
-    border: 1px solid rgba(0, 243, 255, 0.2);
-    margin-bottom: 30px;
-    border-radius: 2px;
-    backdrop-filter: blur(10px);
-    transition: 0.4s;
-    position: relative;
-    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 25px;
+    border-radius: 8px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: 0.3s;
 }
 
-.card::before {
-    content: ""; position: absolute; top: 0; left: -100%;
-    width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary));
-    transition: 0.5s;
-}
-.card:hover::before { left: 100%; }
-.card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--accent-glow); }
+.card:hover { border-color: var(--primary); box-shadow: var(--accent-glow); }
 
 .card-header {
-    padding: 35px; cursor: pointer;
+    padding: 30px; cursor: pointer;
     display: flex; justify-content: space-between; align-items: center;
 }
 
-.card-header h3 { font-size: 1.4rem; letter-spacing: 5px; color: var(--primary); }
+.card-header h3 { 
+    font-size: 1.2rem; letter-spacing: 2px; 
+    color: var(--primary); transition: 0.3s;
+}
 
 .details { 
     max-height: 0; overflow: hidden; 
-    transition: max-height 0.8s ease;
+    transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+    background: rgba(0,0,0,0.2);
 }
-.details.open { max-height: 1000px; padding: 0 30px 30px; }
+.details.open { max-height: 800px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
 
 .lesson {
-    background: rgba(255, 255, 255, 0.02);
-    margin-top: 15px; padding: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex; justify-content: space-between; align-items: center;
-    position: relative;
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 15px; padding: 20px;
+    border-radius: 6px; display: flex;
+    justify-content: space-between; align-items: center;
+    border-left: 3px solid transparent;
+    transition: 0.3s;
 }
 
-.progress-bar {
-    position: absolute; bottom: 0; left: 0;
-    height: 3px; background: var(--secondary);
-    width: 0%; transition: width 1s linear;
+.lesson:hover { 
+    background: rgba(255,255,255,0.07); 
+    border-left-color: var(--secondary);
+    transform: translateX(10px);
 }
 
-.time-box .time { font-size: 1.3rem; color: var(--primary); font-weight: bold; }
-.subject-box { flex-grow: 1; padding: 0 50px; }
-.subject-box .name { font-size: 1.2rem; font-weight: bold; display: block; margin-bottom: 5px; }
-.subject-box .loc { color: var(--secondary); font-size: 0.85rem; font-weight: bold; }
+.time-box .time { font-size: 1.2rem; color: var(--primary); font-weight: bold; }
+.subject-box { flex-grow: 1; padding: 0 40px; }
+.subject-box .name { font-size: 1.1rem; margin-bottom: 4px; display: block; }
+.subject-box .loc { color: var(--secondary); font-size: 0.8rem; font-weight: bold; }
 
-/* Status Bar */
-.status-bar {
+/* Status Footer */
+.status-footer {
     position: fixed; bottom: 0; width: 100%;
-    padding: 15px 40px; background: var(--primary);
-    color: #000; font-weight: 900; font-size: 0.8rem;
+    padding: 12px 30px;
+    background: var(--primary); color: #000;
+    font-size: 0.75rem; font-weight: 900;
     display: flex; justify-content: space-between;
-    z-index: 2000; clip-path: polygon(0 20%, 5% 0, 95% 0, 100% 20%, 100% 100%, 0 100%);
+    z-index: 2000; box-shadow: 0 -5px 20px var(--primary);
 }
 
-.pulse-dot {
-    height: 10px; width: 10px; background: #000;
-    border-radius: 50%; display: inline-block;
-    animation: pulse 1s infinite;
+.glitch-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #fff; z-index: 5000; opacity: 0; pointer-events: none;
 }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+.glitch-active { animation: flash 0.15s infinite; }
+@keyframes flash { 0% { opacity: 0.2; } 100% { opacity: 0; } }
 
-@media (max-width: 768px) {
-    .lesson { flex-direction: column; text-align: center; gap: 20px; }
-    .subject-box { padding: 0; }
-    .status-bar { flex-direction: column; gap: 10px; text-align: center; }
+@media (max-width: 600px) {
+    .lesson { flex-direction: column; text-align: center; gap: 15px; }
+    .hex-switch-container { bottom: 70px; top: auto; right: 20px; transform: none; }
+    .subject-box { padding: 10px 0; }
 }
 </style>
 </head>
 <body data-mode="cyber">
 
-<canvas id="matrix-canvas"></canvas>
+<div class="glitch-overlay" id="glitch"></div>
 
-<div class="hex-btn" onclick="toggleSystem()">
-    <div style="font-size: 10px; color: inherit; font-weight: 900;">EXE</div>
+<div class="hex-switch-container">
+    <div class="hex-core" onclick="toggleSystem()">
+        <span style="font-size: 11px; font-weight: 900; color: var(--primary);">SYS</span>
+    </div>
 </div>
 
 <header>
-    <div style="color: var(--secondary); font-size: 0.7rem; letter-spacing: 10px;">SYSTEM_INITIALIZING...</div>
-    <h1 class="glitch-title" id="main-title">WOX_CORE_v8</h1>
+    <div class="system-id" id="status-id">STATUS: ENCRYPTED_STREAMS_ACTIVE</div>
+    <h1 class="title" id="main-title">PaGe_OF_WoX</h1>
 </header>
 
 <div class="grid" id="main-grid">
     <div class="card" id="day-1">
         <div class="card-header" onclick="toggleCard(this)">
-            <h3>DUSHANBA</h3><span>[01]</span>
+            <h3>DUSHANBA</h3><span class="day-icon">⚡</span>
         </div>
         <div class="details">
-            <div class="lesson">
-                <div class="time-box"><span class="time">08:30</span></div>
-                <div class="subject-box"><span class="name">O'zbekiston tarixi</span><span class="loc">B-111</span></div>
-                <div class="progress-bar"></div>
-            </div>
-            <div class="lesson">
-                <div class="time-box"><span class="time">10:00</span></div>
-                <div class="subject-box"><span class="name">Hisob 2 (Amaliy)</span><span class="loc">B-208</span></div>
-                <div class="progress-bar"></div>
-            </div>
+            <div class="lesson"><div class="time-box"><span class="time">08:30</span></div><div class="subject-box"><span class="name">O'zbekiston tarixi</span><span class="loc">B-111</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">10:00</span></div><div class="subject-box"><span class="name">Hisob 2 (Amaliy)</span><span class="loc">B-208</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">12:00</span></div><div class="subject-box"><span class="name">Hisob 2 (Ma'ruza)</span><span class="loc">A-103</span></div></div>
         </div>
     </div>
-    
+
     <div class="card" id="day-2">
         <div class="card-header" onclick="toggleCard(this)">
-            <h3>SESHANBA</h3><span>[02]</span>
+            <h3>SESHANBA</h3><span class="day-icon">⚡</span>
         </div>
         <div class="details">
-            <div class="lesson">
-                <div class="time-box"><span class="time">08:30</span></div>
-                <div class="subject-box"><span class="name">Diskret tuzilmalar</span><span class="loc">B-219</span></div>
-                <div class="progress-bar"></div>
-            </div>
+            <div class="lesson"><div class="time-box"><span class="time">08:30</span></div><div class="subject-box"><span class="name">Diskret tuzilmalar</span><span class="loc">B-219</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">10:00</span></div><div class="subject-box"><span class="name">Xorijiy til</span><span class="loc">B-219</span></div></div>
+        </div>
+    </div>
+
+    <div class="card" id="day-3">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3>CHORSHANBA</h3><span class="day-icon">⚡</span>
+        </div>
+        <div class="details">
+            <div class="lesson"><div class="time-box"><span class="time">13:30</span></div><div class="subject-box"><span class="name">Xorijiy til</span><span class="loc">B-301</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">15:00</span></div><div class="subject-box"><span class="name">Dinshunoslik</span><span class="loc">B-106</span></div></div>
+        </div>
+    </div>
+
+    <div class="card" id="day-4">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3>PAYSHANBA</h3><span class="day-icon">⚡</span>
+        </div>
+        <div class="details">
+            <div class="lesson"><div class="time-box"><span class="time">10:00</span></div><div class="subject-box"><span class="name">Ma'lumot tuzilmalari</span><span class="loc">A-109</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">12:00</span></div><div class="subject-box"><span class="name">Diskret tuzilmalar</span><span class="loc">A-103</span></div></div>
         </div>
     </div>
 
     <div class="card" id="day-5">
         <div class="card-header" onclick="toggleCard(this)">
-            <h3>JUMA</h3><span style="color: var(--secondary);">[VIBE]</span>
+            <h3>JUMA</h3><span class="day-icon">🔥</span>
         </div>
         <div class="details">
-            <div class="lesson">
-                <div class="time-box"><span class="time">12:00</span></div>
-                <div class="subject-box"><span class="name">Ma'lumot tuzilmalari</span><span class="loc">A-313</span></div>
-                <div class="progress-bar"></div>
-            </div>
-            <div class="lesson">
-                <div class="time-box"><span class="time">13:30</span></div>
-                <div class="subject-box"><span class="name">Kelajak soati</span><span class="loc">MAIN_HALL</span></div>
-                <div class="progress-bar"></div>
-            </div>
+            <div class="lesson"><div class="time-box"><span class="time">12:00</span></div><div class="subject-box"><span class="name">Ma'lumot tuzilmalari</span><span class="loc">A-313</span></div></div>
+            <div class="lesson"><div class="time-box"><span class="time">13:30</span></div><div class="subject-box"><span class="name">Kelajak soati</span><span class="loc">Faolalar zali</span></div></div>
         </div>
     </div>
 </div>
 
-<footer class="status-bar">
-    <span><span class="pulse-dot"></span> CONNECTION: STABLE_v8.0</span>
-    <span id="live-time">00:00:00</span>
-    <span>AURA: MAX_POWER</span>
-    <span id="coord">X:0 Y:0</span>
+<footer class="status-footer">
+    <span id="real-time">00:00:00</span>
+    <span id="coord">X: 0 // Y: 0</span>
+    <span class="aura">SYSTEM_LEVEL: 100%</span>
 </footer>
 
 <script>
-// Matrix Effect
-const canvas = document.getElementById('matrix-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const letters = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
+// Real-time Clock
+function updateClock() {
+    const now = new Date();
+    document.getElementById('real-time').innerText = now.toTimeString().split(' ')[0];
+}
+setInterval(updateClock, 1000);
+updateClock();
 
-function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
-    ctx.font = fontSize + "px monospace";
-    for(let i = 0; i < drops.length; i++) {
-        const text = letters[Math.floor(Math.random() * letters.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
+// Auto-open Current Day
+const today = new Date().getDay(); // 1=Mon, 2=Tue...
+if(today >= 1 && today <= 5) {
+    const todayCard = document.getElementById(`day-${today}`);
+    if(todayCard) {
+        setTimeout(() => {
+            todayCard.querySelector('.details').classList.add('open');
+            todayCard.style.borderColor = "var(--primary)";
+        }, 500);
     }
 }
-setInterval(drawMatrix, 50);
 
-// Clock & Coordinates
-setInterval(() => {
-    document.getElementById('live-time').innerText = new Date().toTimeString().split(' ')[0];
-}, 1000);
-
+// Mouse Tracking
 document.addEventListener('mousemove', (e) => {
-    document.getElementById('coord').innerText = `X:${e.pageX} Y:${e.pageY}`;
+    document.getElementById('coord').innerText = `X: ${e.pageX} // Y: ${e.pageY}`;
 });
 
-// Card Toggle
+// Toggle Cards
 function toggleCard(header) {
     const details = header.nextElementSibling;
     const isOpen = details.classList.contains('open');
     document.querySelectorAll('.details').forEach(d => d.classList.remove('open'));
-    if(!isOpen) details.classList.add('open');
+    document.querySelectorAll('.card').forEach(c => c.style.borderColor = "rgba(255,255,255,0.05)");
+    
+    if(!isOpen) {
+        details.classList.add('open');
+        header.parentElement.style.borderColor = "var(--primary)";
+    }
 }
 
-// System Switch
+// System Mode Toggle
 function toggleSystem() {
     const body = document.body;
-    body.setAttribute('data-mode', body.getAttribute('data-mode') === 'cyber' ? 'prime' : 'cyber');
+    const glitch = document.getElementById('glitch');
+    const statusId = document.getElementById('status-id');
     const title = document.getElementById('main-title');
-    title.innerText = body.getAttribute('data-mode') === 'cyber' ? "WOX_CORE_v8" : "OVERRIDE_MODE";
-}
 
-// Auto-Open Today
-const today = new Date().getDay();
-if(today >= 1 && today <= 5) {
-    const todayCard = document.getElementById(`day-${today}`);
-    if(todayCard) todayCard.querySelector('.details').classList.add('open');
+    glitch.classList.add('glitch-active');
+    setTimeout(() => glitch.classList.remove('glitch-active'), 250);
+
+    if(body.getAttribute('data-mode') === 'cyber') {
+        body.setAttribute('data-mode', 'prime');
+        statusId.innerText = "STATUS: PRIME_PROTOCOL_V2";
+        title.innerText = "WOX_PRIME_SYS";
+        body.style.fontFamily = "var(--font-prime)";
+    } else {
+        body.setAttribute('data-mode', 'cyber');
+        statusId.innerText = "STATUS: ENCRYPTED_STREAMS_ACTIVE";
+        title.innerText = "PaGe_OF_WoX";
+        body.style.fontFamily = "var(--font-cyber)";
+    }
 }
 </script>
 </body>
