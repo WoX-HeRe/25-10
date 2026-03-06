@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOX SYSTEM | NEURAL-CORE v8.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;700&family=Syncopate:wght@700&family=Michroma&display=swap');
+
+:root {
+    --primary: #00f3ff;
+    --secondary: #bc13fe;
+    --bg: #020202;
+    --card-bg: rgba(10, 10, 10, 0.8);
+    --font-cyber: 'Fira Code', monospace;
+    --accent-glow: 0 0 20px rgba(0, 243, 255, 0.6);
+}
+
+[data-mode="prime"] {
+    --primary: #ff003c;
+    --secondary: #ff8000;
+    --bg: #050000;
+    --accent-glow: 0 0 25px rgba(255, 0, 60, 0.7);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+body {
+    background: var(--bg);
+    color: #fff;
+    font-family: var(--font-cyber);
+    min-height: 100vh;
+    overflow-x: hidden;
+    perspective: 1000px;
+}
+
+/* Matrix Background Canvas */
+#matrix-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; opacity: 0.15;
+}
+
+/* Scanline and Noise */
+body::after {
+    content: "";
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 3px, 2px 100%;
+    z-index: 1000; pointer-events: none;
+}
+
+/* Floating Hex Switch */
+.hex-btn {
+    position: fixed; right: 40px; top: 40px;
+    width: 60px; height: 70px;
+    background: transparent;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    border: 2px solid var(--primary);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: var(--accent-glow);
+}
+.hex-btn:hover { transform: rotate(180deg) scale(1.2); background: var(--primary); }
+
+header { text-align: center; padding: 100px 20px 50px; }
+.glitch-title {
+    font-family: 'Syncopate', sans-serif;
+    font-size: clamp(2.5rem, 12vw, 6rem);
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+    color: #fff;
+    text-shadow: 0.05em 0 0 var(--secondary), -0.05em -0.025em 0 var(--primary);
+    animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+    0% { text-shadow: 0.05em 0 0 var(--secondary), -0.05em -0.025em 0 var(--primary); }
+    15% { text-shadow: -0.05em -0.025em 0 var(--secondary), 0.025em 0.025em 0 var(--primary); }
+    100% { text-shadow: -0.025em 0 0 var(--secondary), -0.025em -0.025em 0 var(--primary); }
+}
+
+.grid { max-width: 1100px; margin: 0 auto; padding: 20px 20px 150px; }
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    margin-bottom: 30px;
+    border-radius: 2px;
+    backdrop-filter: blur(10px);
+    transition: 0.4s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: ""; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary));
+    transition: 0.5s;
+}
+.card:hover::before { left: 100%; }
+.card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--accent-glow); }
+
+.card-header {
+    padding: 35px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.card-header h3 { font-size: 1.4rem; letter-spacing: 5px; color: var(--primary); }
+
+.details { 
+    max-height: 0; overflow: hidden; 
+    transition: max-height 0.8s ease;
+}
+.details.open { max-height: 1000px; padding: 0 30px 30px; }
+
+.lesson {
+    background: rgba(255, 255, 255, 0.02);
+    margin-top: 15px; padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative;
+}
+
+.progress-bar {
+    position: absolute; bottom: 0; left: 0;
+    height: 3px; background: var(--secondary);
+    width: 0%; transition: width 1s linear;
+}
+
+.time-box .time { font-size: 1.3rem; color: var(--primary); font-weight: bold; }
+.subject-box { flex-grow: 1; padding: 0 50px; }
+.subject-box .name { font-size: 1.2rem; font-weight: bold; display: block; margin-bottom: 5px; }
+.subject-box .loc { color: var(--secondary); font-size: 0.85rem; font-weight: bold; }
+
+/* Status Bar */
+.status-bar {
+    position: fixed; bottom: 0; width: 100%;
+    padding: 15px 40px; background: var(--primary);
+    color: #000; font-weight: 900; font-size: 0.8rem;
+    display: flex; justify-content: space-between;
+    z-index: 2000; clip-path: polygon(0 20%, 5% 0, 95% 0, 100% 20%, 100% 100%, 0 100%);
+}
+
+.pulse-dot {
+    height: 10px; width: 10px; background: #000;
+    border-radius: 50%; display: inline-block;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+@media (max-width: 768px) {
+    .lesson { flex-direction: column; text-align: center; gap: 20px; }
+    .subject-box { padding: 0; }
+    .status-bar { flex-direction: column; gap: 10px; text-align: center; }
+}
+</style>
+</head>
+<body data-mode="cyber">
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="hex-btn" onclick="toggleSystem()">
+    <div style="font-size: 10px; color: inherit; font-weight: 900;">EXE</div>
+</div>
+
+<header>
+    <div style="color: var(--secondary); font-size: 0.7rem; letter-spacing: 10px;">SYSTEM_INITIALIZING...</div>
+    <h1 class="glitch-title" id="main-title">WOX_CORE_v8</h1>
+</header>
+
+<div class="grid" id="main-grid">
+    <div class="card" id="day-1">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3>DUSHANBA</h3><span>[01]</span>
+        </div>
+        <div class="details">
+            <div class="lesson">
+                <div class="time-box"><span class="time">08:30</span></div>
+                <div class="subject-box"><span class="name">O'zbekiston tarixi</span><span class="loc">B-111</span></div>
+                <div class="progress-bar"></div>
+            </div>
+            <div class="lesson">
+                <div class="time-box"><span class="time">10:00</span></div>
+                <div class="subject-box"><span class="name">Hisob 2 (Amaliy)</span><span class="loc">B-208</span></div>
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" id="day-2">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3>SESHANBA</h3><span>[02]</span>
+        </div>
+        <div class="details">
+            <div class="lesson">
+                <div class="time-box"><span class="time">08:30</span></div>
+                <div class="subject-box"><span class="name">Diskret tuzilmalar</span><span class="loc">B-219</span></div>
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" id="day-5">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3>JUMA</h3><span style="color: var(--secondary);">[VIBE]</span>
+        </div>
+        <div class="details">
+            <div class="lesson">
+                <div class="time-box"><span class="time">12:00</span></div>
+                <div class="subject-box"><span class="name">Ma'lumot tuzilmalari</span><span class="loc">A-313</span></div>
+                <div class="progress-bar"></div>
+            </div>
+            <div class="lesson">
+                <div class="time-box"><span class="time">13:30</span></div>
+                <div class="subject-box"><span class="name">Kelajak soati</span><span class="loc">MAIN_HALL</span></div>
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="status-bar">
+    <span><span class="pulse-dot"></span> CONNECTION: STABLE_v8.0</span>
+    <span id="live-time">00:00:00</span>
+    <span>AURA: MAX_POWER</span>
+    <span id="coord">X:0 Y:0</span>
+</footer>
+
+<script>
+// Matrix Effect
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const letters = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+    ctx.font = fontSize + "px monospace";
+    for(let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    }
+}
+setInterval(drawMatrix, 50);
+
+// Clock & Coordinates
+setInterval(() => {
+    document.getElementById('live-time').innerText = new Date().toTimeString().split(' ')[0];
+}, 1000);
+
+document.addEventListener('mousemove', (e) => {
+    document.getElementById('coord').innerText = `X:${e.pageX} Y:${e.pageY}`;
+});
+
+// Card Toggle
+function toggleCard(header) {
+    const details = header.nextElementSibling;
+    const isOpen = details.classList.contains('open');
+    document.querySelectorAll('.details').forEach(d => d.classList.remove('open'));
+    if(!isOpen) details.classList.add('open');
+}
+
+// System Switch
+function toggleSystem() {
+    const body = document.body;
+    body.setAttribute('data-mode', body.getAttribute('data-mode') === 'cyber' ? 'prime' : 'cyber');
+    const title = document.getElementById('main-title');
+    title.innerText = body.getAttribute('data-mode') === 'cyber' ? "WOX_CORE_v8" : "OVERRIDE_MODE";
+}
+
+// Auto-Open Today
+const today = new Date().getDay();
+if(today >= 1 && today <= 5) {
+    const todayCard = document.getElementById(`day-${today}`);
+    if(todayCard) todayCard.querySelector('.details').classList.add('open');
+}
+</script>
+</body>
+</html>
